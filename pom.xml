@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>net.cakecdn.node</groupId>
-    <artifactId>cake-node-filenode</artifactId>
+    <artifactId>cake-agent-file-node</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>cake-node-filenode</name>
+    <name>cake-agent-file-node</name>
     <description>CakeCDN file node.</description>
 
     <properties>
