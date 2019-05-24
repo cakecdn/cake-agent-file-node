@@ -15,4 +15,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "cake.node")
 public class CakeProperty {
     private String fileDir;
+    private String endpointUrl;
+    private String healthCheckPath;
 }

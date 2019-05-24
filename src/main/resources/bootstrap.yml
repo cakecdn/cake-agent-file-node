@@ -1,6 +1,8 @@
 cake:
   node:
     fileDir: X:\\file
+    endpointUrl: http://localhost
+    healthCheckPath: /health-check
 
 spring:
   application:

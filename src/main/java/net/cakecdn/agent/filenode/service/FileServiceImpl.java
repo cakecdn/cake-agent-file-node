@@ -1,12 +1,13 @@
 package net.cakecdn.agent.filenode.service;
 
+import net.cakecdn.agent.filenode.config.bean.AgentConfig;
 import net.cakecdn.agent.filenode.dto.info.FileInfo;
 import net.cakecdn.agent.filenode.dto.info.InfoList;
 import net.cakecdn.agent.filenode.dto.info.PathInfo;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -22,8 +23,13 @@ public class FileServiceImpl implements FileService {
 
     @Value("${cake.node.fileDir:/tmp}")
     private String baseFilePath;
-    @Value("${cake.node.fileUrl:http://localhost:7003/}")
-    private String fileUrl;
+
+    private final AgentConfig agentConfig;
+
+    @Autowired
+    public FileServiceImpl(AgentConfig agentConfig) {
+        this.agentConfig = agentConfig;
+    }
 
     @Override
     public boolean fileExists(Long userId, String path, String fileName) {
@@ -46,6 +52,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public InfoList traversing(Long userId, String path, HttpServletResponse response) throws IOException {
+        String baseUrl = agentConfig.getEndpointUrl();
+
         File dest = new File(pathAppend(baseFilePath, userId.toString(), path));
         InfoList infoList = new InfoList();
 
@@ -55,13 +63,13 @@ public class FileServiceImpl implements FileService {
                 for (File f : fs) {
                     if (!f.isDirectory()) {
                         FileInfo fileInfo = new FileInfo(f);
-                        fileInfo.setUrl(pathAppend(fileUrl, userId.toString(), path, f.getName()));
+                        fileInfo.setUrl(pathAppend(baseUrl, userId.toString(), path, f.getName()));
                         fileInfo.setParentUrl(parentUrl(fileInfo.getUrl()));
                         infoList.getFiles().add(fileInfo);
                     } else {
                         PathInfo pathInfo = new PathInfo(f);
-                        pathInfo.setUrl(pathAppend(fileUrl, userId.toString(), path, f.getName()));
-                        pathInfo.setParentUrl(pathAppend(fileUrl, userId.toString(), path));
+                        pathInfo.setUrl(pathAppend(baseUrl, userId.toString(), path, f.getName()));
+                        pathInfo.setParentUrl(pathAppend(baseUrl, userId.toString(), path));
                         pathInfo.setParentUrl(parentUrl(pathInfo.getUrl()));
                         infoList.getPaths().add(pathInfo);
                     }
