@@ -2,12 +2,13 @@ package net.cakecdn.agent.filenode;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
-public class CakeFileNodeApplication {
+public class CakeAgentFileNodeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CakeFileNodeApplication.class, args);
+        SpringApplication.run(CakeAgentFileNodeApplication.class, args);
     }
 
 }
