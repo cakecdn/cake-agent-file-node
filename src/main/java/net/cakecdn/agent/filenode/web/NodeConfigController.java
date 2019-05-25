@@ -23,9 +23,9 @@ public class NodeConfigController {
     }
 
     @PostMapping("/health-check-path")
-    public AjaxResult setHealthCheckPath(@RequestBody String nodeUrl) {
-        agentConfig.setEndpointUrl(nodeUrl);
-        return AjaxResult.success(nodeUrl);
+    public AjaxResult setHealthCheckPath(@RequestBody String healthCheckPath) {
+        agentConfig.setEndpointUrl(healthCheckPath);
+        return AjaxResult.success(healthCheckPath);
     }
 
     @GetMapping
