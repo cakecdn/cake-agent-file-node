@@ -1,6 +1,7 @@
 package net.cakecdn.agent.filenode.service;
 
 import net.cakecdn.agent.filenode.config.bean.AgentConfig;
+import net.cakecdn.agent.filenode.dto.FileTypeEnum;
 import net.cakecdn.agent.filenode.dto.info.FileInfo;
 import net.cakecdn.agent.filenode.dto.info.InfoList;
 import net.cakecdn.agent.filenode.dto.info.PathInfo;
@@ -65,16 +66,20 @@ public class FileServiceImpl implements FileService {
                         FileInfo fileInfo = new FileInfo(f);
                         fileInfo.setUrl(pathAppend(baseUrl, userId.toString(), path, f.getName()));
                         fileInfo.setParentUrl(parentUrl(fileInfo.getUrl()));
+                        fileInfo.setType(FileTypeEnum.FILE);
                         infoList.getFiles().add(fileInfo);
                     } else {
                         PathInfo pathInfo = new PathInfo(f);
                         pathInfo.setUrl(pathAppend(baseUrl, userId.toString(), path, f.getName()));
                         pathInfo.setParentUrl(pathAppend(baseUrl, userId.toString(), path));
                         pathInfo.setParentUrl(parentUrl(pathInfo.getUrl()));
+                        pathInfo.setType(FileTypeEnum.DIRECTORY);
                         infoList.getPaths().add(pathInfo);
                     }
                 }
             }
+
+            return infoList;
         } else if (dest.isFile()) {
             String contentType = Files.probeContentType(Paths.get(dest.toURI()));
 

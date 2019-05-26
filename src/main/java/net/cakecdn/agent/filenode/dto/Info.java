@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -23,6 +24,8 @@ public abstract class Info {
     private String parentUrl;
     private String contentType;
     private long sizeBytes;
+    private FileTypeEnum type;
+    private Date lastModified;
 
     public Info(File f) throws IOException {
         this.setName(f.getName());
@@ -31,5 +34,6 @@ public abstract class Info {
         this.setSizeBytes(f.length());
         Path path = Paths.get(f.toURI());
         this.setContentType(Files.probeContentType(path));
+        this.setLastModified(new Date(f.lastModified()));
     }
 }
