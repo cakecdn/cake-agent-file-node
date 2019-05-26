@@ -2,6 +2,7 @@ package net.cakecdn.agent.filenode.web;
 
 import net.cakecdn.agent.filenode.config.bean.AgentConfig;
 import net.cakecdn.agent.filenode.dto.AjaxResult;
+import net.cakecdn.agent.filenode.dto.StringBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,15 +18,15 @@ public class NodeConfigController {
     }
 
     @PostMapping("/endpoint-url")
-    public AjaxResult setEndpointUrl(@RequestBody String nodeUrl) {
-        agentConfig.setEndpointUrl(nodeUrl);
-        return AjaxResult.success(nodeUrl);
+    public AjaxResult setEndpointUrl(@RequestBody StringBody nodeUrl) {
+        agentConfig.setEndpointUrl(nodeUrl.getValue());
+        return AjaxResult.success(nodeUrl.getValue());
     }
 
     @PostMapping("/health-check-path")
-    public AjaxResult setHealthCheckPath(@RequestBody String healthCheckPath) {
-        agentConfig.setEndpointUrl(healthCheckPath);
-        return AjaxResult.success(healthCheckPath);
+    public AjaxResult setHealthCheckPath(@RequestBody StringBody healthCheckPath) {
+        agentConfig.setEndpointUrl(healthCheckPath.getValue());
+        return AjaxResult.success(healthCheckPath.getValue());
     }
 
     @GetMapping

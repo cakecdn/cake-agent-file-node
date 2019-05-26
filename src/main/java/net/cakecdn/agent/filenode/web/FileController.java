@@ -1,6 +1,7 @@
 package net.cakecdn.agent.filenode.web;
 
 import net.cakecdn.agent.filenode.dto.AjaxResult;
+import net.cakecdn.agent.filenode.dto.StringBody;
 import net.cakecdn.agent.filenode.dto.info.InfoList;
 import net.cakecdn.agent.filenode.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,8 +126,8 @@ public class FileController {
     }
 
     @PostMapping("/mkdir/{userId}")
-    public AjaxResult mkdir(@PathVariable Long userId, @RequestBody String dirName) {
-        boolean success = fileService.mkdir(userId, "/", dirName);
+    public AjaxResult mkdir(@PathVariable Long userId, @RequestBody StringBody dirName) {
+        boolean success = fileService.mkdir(userId, "/", dirName.getValue());
 
         return AjaxResult.whether(success);
     }
@@ -135,7 +136,7 @@ public class FileController {
     public AjaxResult mkdir(
             @PathVariable Long userId,
             @PathVariable String filePath,
-            @RequestBody String dirName,
+            @RequestBody StringBody dirName,
             HttpServletRequest request
     ) {
         final String patternPath =
@@ -153,7 +154,7 @@ public class FileController {
             path = filePath;
         }
 
-        boolean success = fileService.mkdir(userId, path, dirName);
+        boolean success = fileService.mkdir(userId, path, dirName.getValue());
 
         return AjaxResult.whether(success);
     }
