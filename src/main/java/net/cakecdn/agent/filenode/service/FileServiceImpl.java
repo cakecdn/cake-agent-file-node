@@ -64,6 +64,26 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public boolean delete(Long userId, String basePath, String fileOrFolderToBeRemoved) {
+        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileOrFolderToBeRemoved));
+        if (dest.isDirectory()) {
+            return deleteDirectory(dest);
+        } else {
+            return dest.delete();
+        }
+    }
+
+    private boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
+
+    @Override
     public InfoList traversing(Long userId, String basePath, HttpServletResponse response) throws IOException {
         String baseUrl = agentConfig.getEndpointUrl();
 

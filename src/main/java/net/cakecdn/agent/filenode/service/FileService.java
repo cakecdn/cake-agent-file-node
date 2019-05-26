@@ -15,5 +15,7 @@ public interface FileService {
 
     boolean mkdirs(Long userId, String basePath, String destFolder);
 
+    boolean delete(Long userId, String basePath, String fileOrFolderToBeRemoved);
+
     InfoList traversing(Long userId, String basePath, HttpServletResponse response) throws IOException;
 }

@@ -17,6 +17,12 @@ public class FileServiceImplTest extends CakeAgentFileNodeApplicationTests {
 
     @Test
     public void mkdir() {
-        fileService.mkdir(4L,"/","/");
+        fileService.mkdir(4L,"/","/kkk");
+    }
+
+    @Test
+    public void delete() {
+        boolean bool = fileService.delete(4L,"/","/kkk");
+        System.out.println(bool);
     }
 }
