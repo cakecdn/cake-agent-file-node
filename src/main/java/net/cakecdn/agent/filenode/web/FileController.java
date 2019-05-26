@@ -158,4 +158,30 @@ public class FileController {
 
         return AjaxResult.whether(success);
     }
+
+    @DeleteMapping("/{userId}/{filePath}/**")
+    public AjaxResult delete(
+            @PathVariable Long userId,
+            @PathVariable String filePath,
+            HttpServletRequest request
+    ) {
+        final String patternPath =
+                request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+        final String bestMatchingPattern =
+                request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
+
+        String arguments = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, patternPath);
+
+        String path;
+
+        if (!arguments.isEmpty()) {
+            path = filePath + '/' + arguments;
+        } else {
+            path = filePath;
+        }
+
+        boolean success = fileService.delete(userId, "/", path);
+
+        return AjaxResult.whether(success);
+    }
 }
