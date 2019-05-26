@@ -7,11 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FileServiceImplTest extends CakeAgentFileNodeApplicationTests {
 
     @Autowired
-    private FileServiceImpl uploadService;
+    private FileServiceImpl fileService;
 
     @Test
     public void fileExists() {
-        boolean exists = uploadService.fileExists(123456L, "/", "IGXN201803027_00900.jpg");
+        boolean exists = fileService.fileExists(123456L, "/", "IGXN201803027_00900.jpg");
         System.out.println(exists);
+    }
+
+    @Test
+    public void mkdir() {
+        fileService.mkdir(4L,"/","/");
     }
 }

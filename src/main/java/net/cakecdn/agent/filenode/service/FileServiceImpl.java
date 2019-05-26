@@ -33,14 +33,14 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public boolean fileExists(Long userId, String path, String fileName) {
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), path, fileName));
+    public boolean fileExists(Long userId, String basePath, String fileName) {
+        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileName));
         return dest.exists();
     }
 
     @Override
-    public void upload(Long userId, String path, String fileName, MultipartFile file) throws IOException {
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), path, fileName));
+    public void upload(Long userId, String basePath, String fileName, MultipartFile file) throws IOException {
+        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileName));
 
         // 创建目录
         if (!dest.getParentFile().exists()) {
@@ -52,10 +52,22 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public InfoList traversing(Long userId, String path, HttpServletResponse response) throws IOException {
+    public boolean mkdir(Long userId, String basePath, String destFolder) {
+        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, destFolder));
+        return dest.mkdir();
+    }
+
+    @Override
+    public boolean mkdirs(Long userId, String basePath, String destFolder) {
+        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, destFolder));
+        return dest.mkdirs();
+    }
+
+    @Override
+    public InfoList traversing(Long userId, String basePath, HttpServletResponse response) throws IOException {
         String baseUrl = agentConfig.getEndpointUrl();
 
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), path));
+        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath));
         InfoList infoList = new InfoList();
 
         if (dest.isDirectory()) {
@@ -64,14 +76,14 @@ public class FileServiceImpl implements FileService {
                 for (File f : fs) {
                     if (!f.isDirectory()) {
                         FileInfo fileInfo = new FileInfo(f);
-                        fileInfo.setUrl(pathAppend(baseUrl, userId.toString(), path, f.getName()));
+                        fileInfo.setUrl(pathAppend(baseUrl, userId.toString(), basePath, f.getName()));
                         fileInfo.setParentUrl(parentUrl(fileInfo.getUrl()));
                         fileInfo.setType(FileTypeEnum.FILE);
                         infoList.getFiles().add(fileInfo);
                     } else {
                         PathInfo pathInfo = new PathInfo(f);
-                        pathInfo.setUrl(pathAppend(baseUrl, userId.toString(), path, f.getName()));
-                        pathInfo.setParentUrl(pathAppend(baseUrl, userId.toString(), path));
+                        pathInfo.setUrl(pathAppend(baseUrl, userId.toString(), basePath, f.getName()));
+                        pathInfo.setParentUrl(pathAppend(baseUrl, userId.toString(), basePath));
                         pathInfo.setParentUrl(parentUrl(pathInfo.getUrl()));
                         pathInfo.setType(FileTypeEnum.DIRECTORY);
                         infoList.getPaths().add(pathInfo);

@@ -23,13 +23,52 @@ public class FileController {
         this.fileService = fileService;
     }
 
+    @GetMapping("/")
     @ResponseBody
-    @PostMapping("/file")
+    public AjaxResult moduleStrings(
+            HttpServletResponse response
+    ) {
+        response.setStatus(403);
+        return AjaxResult.failure("403 forbidden.");
+    }
+
+    @PostMapping("/{userId}")
+    @ResponseBody
     public AjaxResult upload(
+            @PathVariable Long userId,
             @RequestParam MultipartFile file,
-            @RequestParam Long userId,
-            @RequestParam String path
+            HttpServletRequest request
     ) throws IOException {
+        String fileName = file.getOriginalFilename();
+        fileService.upload(userId, "/", fileName, file);
+
+        return AjaxResult.failure("error.");
+    }
+
+    @PostMapping("/{userId}/{filePath}/**")
+    @ResponseBody
+    public AjaxResult upload(
+            @PathVariable Long userId,
+            @PathVariable String filePath,
+            @RequestParam MultipartFile file,
+            HttpServletRequest request
+    ) throws IOException {
+
+        final String patternPath =
+                request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+        final String bestMatchingPattern =
+                request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
+
+        String arguments = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, patternPath);
+
+        String path;
+
+        if (!arguments.isEmpty()) {
+            path = filePath + '/' + arguments;
+        } else {
+            path = filePath;
+        }
+
         if (file.isEmpty()) {
             return AjaxResult.failure("error: empty body.");
         }
@@ -39,9 +78,24 @@ public class FileController {
         return AjaxResult.failure("error");
     }
 
+    @GetMapping("/{userId}")
+    @ResponseBody
+    public AjaxResult get(
+            @PathVariable Long userId,
+            HttpServletResponse response
+    ) throws IOException {
+
+        InfoList infoList = fileService.traversing(userId, "/", response);
+
+        if (infoList != null)
+            return AjaxResult.success(infoList);
+
+        return AjaxResult.failure("404 not found.");
+    }
+
     @GetMapping("/{userId}/{filePath}/**")
     @ResponseBody
-    public AjaxResult moduleStrings(
+    public AjaxResult get(
             @PathVariable Long userId,
             @PathVariable String filePath,
             HttpServletRequest request,
@@ -70,27 +124,37 @@ public class FileController {
         else return null;
     }
 
-    @GetMapping("/{userId}")
-    @ResponseBody
-    public AjaxResult moduleStrings(
-            @PathVariable Long userId,
-            HttpServletResponse response
-    ) throws IOException {
+    @PostMapping("/mkdir/{userId}")
+    public AjaxResult mkdir(@PathVariable Long userId, @RequestBody String dirName) {
+        boolean success = fileService.mkdir(userId, "/", dirName);
 
-        InfoList infoList = fileService.traversing(userId, "/", response);
-
-        if (infoList != null)
-            return AjaxResult.success(infoList);
-
-        return AjaxResult.failure("404 not found.");
+        return AjaxResult.whether(success);
     }
 
-    @GetMapping("/")
-    @ResponseBody
-    public AjaxResult moduleStrings(
-            HttpServletResponse response
+    @PostMapping("/mkdir/{userId}/{filePath}/**")
+    public AjaxResult mkdir(
+            @PathVariable Long userId,
+            @PathVariable String filePath,
+            @RequestBody String dirName,
+            HttpServletRequest request
     ) {
-        response.setStatus(403);
-        return AjaxResult.failure("403 forbidden.");
+        final String patternPath =
+                request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+        final String bestMatchingPattern =
+                request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
+
+        String arguments = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, patternPath);
+
+        String path;
+
+        if (!arguments.isEmpty()) {
+            path = filePath + '/' + arguments;
+        } else {
+            path = filePath;
+        }
+
+        boolean success = fileService.mkdir(userId, path, dirName);
+
+        return AjaxResult.whether(success);
     }
 }

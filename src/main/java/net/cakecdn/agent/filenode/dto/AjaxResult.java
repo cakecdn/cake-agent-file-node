@@ -12,6 +12,13 @@ public class AjaxResult {
     private AjaxResult() {
     }
 
+    public static AjaxResult whether(boolean success) {
+        if (success)
+            return AjaxResult.success();
+        else
+            return AjaxResult.failure();
+    }
+
     public static AjaxResult success() {
         AjaxResult ajaxResult = new AjaxResult();
         ajaxResult.meta = new Meta(true, OK);

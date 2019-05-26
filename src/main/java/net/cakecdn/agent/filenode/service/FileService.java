@@ -7,9 +7,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public interface FileService {
-    boolean fileExists(Long userId, String path, String fileName);
+    boolean fileExists(Long userId, String basePath, String fileName);
 
-    void upload(Long userId, String path, String fileName, MultipartFile file) throws IOException;
+    void upload(Long userId, String basePath, String fileName, MultipartFile file) throws IOException;
+    
+    boolean mkdir(Long userId, String basePath, String destFolder);
 
-    InfoList traversing(Long userId, String path, HttpServletResponse response) throws IOException;
+    boolean mkdirs(Long userId, String basePath, String destFolder);
+
+    InfoList traversing(Long userId, String basePath, HttpServletResponse response) throws IOException;
 }
