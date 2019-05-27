@@ -25,4 +25,10 @@ public class FileServiceImplTest extends CakeAgentFileNodeApplicationTests {
         boolean bool = fileService.delete(4L,"/","/kkk");
         System.out.println(bool);
     }
+
+    @Test
+    public void rename() {
+        boolean bool = fileService.rename(4L,"/","/s","/unnamed");
+        System.out.println(bool);
+    }
 }

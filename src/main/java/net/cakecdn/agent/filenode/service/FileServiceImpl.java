@@ -35,43 +35,50 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public boolean fileExists(Long userId, String basePath, String fileName) {
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileName));
-        return dest.exists();
+        File dst = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileName));
+        return dst.exists();
     }
 
     @Override
     public void upload(Long userId, String basePath, String fileName, MultipartFile file) throws IOException {
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileName));
+        File dst = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileName));
 
         // 创建目录
-        if (!dest.getParentFile().exists()) {
-            if (dest.getParentFile().mkdirs()) {
+        if (!dst.getParentFile().exists()) {
+            if (dst.getParentFile().mkdirs()) {
                 throw new IOException("Make directory failed.");
             }
         }
-        file.transferTo(dest);
+        file.transferTo(dst);
     }
 
     @Override
-    public boolean mkdir(Long userId, String basePath, String destFolder) {
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, destFolder));
-        return dest.mkdir();
+    public boolean mkdir(Long userId, String basePath, String dstFolder) {
+        File dst = new File(pathAppend(baseFilePath, userId.toString(), basePath, dstFolder));
+        return dst.mkdir();
     }
 
     @Override
-    public boolean mkdirs(Long userId, String basePath, String destFolder) {
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, destFolder));
-        return dest.mkdirs();
+    public boolean mkdirs(Long userId, String basePath, String dstFolder) {
+        File dst = new File(pathAppend(baseFilePath, userId.toString(), basePath, dstFolder));
+        return dst.mkdirs();
     }
 
     @Override
     public boolean delete(Long userId, String basePath, String fileOrFolderToBeRemoved) {
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileOrFolderToBeRemoved));
-        if (dest.isDirectory()) {
-            return deleteDirectory(dest);
+        File dst = new File(pathAppend(baseFilePath, userId.toString(), basePath, fileOrFolderToBeRemoved));
+        if (dst.isDirectory()) {
+            return deleteDirectory(dst);
         } else {
-            return dest.delete();
+            return dst.delete();
         }
+    }
+
+    @Override
+    public boolean rename(Long userId, String basePath, String src, String dst) {
+        File srcFileOrPath = new File(pathAppend(baseFilePath, userId.toString(), basePath, src));
+        File dstFileOrPath = new File(pathAppend(baseFilePath, userId.toString(), basePath, dst));
+        return srcFileOrPath.renameTo(dstFileOrPath);
     }
 
     private boolean deleteDirectory(File directoryToBeDeleted) {
@@ -88,11 +95,11 @@ public class FileServiceImpl implements FileService {
     public InfoList traversing(Long userId, String basePath, HttpServletResponse response) throws IOException {
         String baseUrl = agentConfig.getEndpointUrl();
 
-        File dest = new File(pathAppend(baseFilePath, userId.toString(), basePath));
+        File dst = new File(pathAppend(baseFilePath, userId.toString(), basePath));
         InfoList infoList = new InfoList();
 
-        if (dest.isDirectory()) {
-            File[] fs = dest.listFiles();
+        if (dst.isDirectory()) {
+            File[] fs = dst.listFiles();
             if (fs != null) {
                 for (File f : fs) {
                     if (!f.isDirectory()) {
@@ -114,13 +121,13 @@ public class FileServiceImpl implements FileService {
             }
 
             return infoList;
-        } else if (dest.isFile()) {
-            String contentType = Files.probeContentType(Paths.get(dest.toURI()));
+        } else if (dst.isFile()) {
+            String contentType = Files.probeContentType(Paths.get(dst.toURI()));
 
             response.setHeader("content-type", contentType);
             response.setContentType(contentType);
 
-            InputStream is = new FileInputStream(dest);
+            InputStream is = new FileInputStream(dst);
             OutputStream os = response.getOutputStream();
 
             byte[] buffer = new byte[1024];

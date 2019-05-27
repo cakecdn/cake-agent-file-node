@@ -1,6 +1,7 @@
 package net.cakecdn.agent.filenode.web;
 
 import net.cakecdn.agent.filenode.dto.AjaxResult;
+import net.cakecdn.agent.filenode.dto.RenameDto;
 import net.cakecdn.agent.filenode.dto.StringBody;
 import net.cakecdn.agent.filenode.dto.info.InfoList;
 import net.cakecdn.agent.filenode.service.FileService;
@@ -117,6 +118,25 @@ public class FileController {
         String path = getPath(filePath, request);
         boolean success = fileService.delete(userId, "/", path);
         return AjaxResult.whether(success);
+    }
+
+    @PostMapping("/rename/{userId}")
+    public AjaxResult rename(
+            @PathVariable Long userId,
+            @RequestBody RenameDto renameDto
+    ) {
+        return AjaxResult.whether(fileService.rename(userId, "/", renameDto.getSrc(), renameDto.getDst()));
+    }
+
+    @PostMapping("/rename/{userId}/{filePath}/**")
+    public AjaxResult rename(
+            @PathVariable Long userId,
+            @PathVariable String filePath,
+            HttpServletRequest request,
+            @RequestBody RenameDto renameDto
+    ) {
+        String path = getPath(filePath, request);
+        return AjaxResult.whether(fileService.rename(userId, path, renameDto.getSrc(), renameDto.getDst()));
     }
 
     private String getPath(String basePath, HttpServletRequest request) {
