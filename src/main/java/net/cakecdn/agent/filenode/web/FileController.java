@@ -68,12 +68,9 @@ public class FileController {
             @PathVariable Long userId,
             HttpServletResponse response
     ) throws IOException {
-
         InfoList infoList = fileService.traversing(userId, "/", response);
-
         if (infoList != null)
             return AjaxResult.success(infoList);
-
         return AjaxResult.failure("404 not found.");
     }
 
