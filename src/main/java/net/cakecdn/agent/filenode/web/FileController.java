@@ -42,7 +42,6 @@ public class FileController {
     ) throws IOException {
         String fileName = file.getOriginalFilename();
         fileService.upload(userId, "/", fileName, file);
-
         return AjaxResult.failure("error.");
     }
 
@@ -54,28 +53,12 @@ public class FileController {
             @RequestParam MultipartFile file,
             HttpServletRequest request
     ) throws IOException {
-
-        final String patternPath =
-                request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-        final String bestMatchingPattern =
-                request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-
-        String arguments = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, patternPath);
-
-        String path;
-
-        if (!arguments.isEmpty()) {
-            path = filePath + '/' + arguments;
-        } else {
-            path = filePath;
-        }
-
         if (file.isEmpty()) {
             return AjaxResult.failure("error: empty body.");
         }
+        String path = getPath(filePath, request);
         String fileName = file.getOriginalFilename();
         fileService.upload(userId, path, fileName, file);
-
         return AjaxResult.failure("error");
     }
 
@@ -102,24 +85,8 @@ public class FileController {
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
-
-        final String patternPath =
-                request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-        final String bestMatchingPattern =
-                request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-
-        String arguments = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, patternPath);
-
-        String path;
-
-        if (!arguments.isEmpty()) {
-            path = filePath + '/' + arguments;
-        } else {
-            path = filePath;
-        }
-
+        String path = getPath(filePath, request);
         InfoList infoList = fileService.traversing(userId, path, response);
-
         if (infoList != null)
             return AjaxResult.success(infoList);
         else return null;
@@ -139,23 +106,8 @@ public class FileController {
             @RequestBody StringBody dirName,
             HttpServletRequest request
     ) {
-        final String patternPath =
-                request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
-        final String bestMatchingPattern =
-                request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-
-        String arguments = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, patternPath);
-
-        String path;
-
-        if (!arguments.isEmpty()) {
-            path = filePath + '/' + arguments;
-        } else {
-            path = filePath;
-        }
-
+        String path = getPath(filePath, request);
         boolean success = fileService.mkdir(userId, path, dirName.getValue());
-
         return AjaxResult.whether(success);
     }
 
@@ -165,23 +117,23 @@ public class FileController {
             @PathVariable String filePath,
             HttpServletRequest request
     ) {
+        String path = getPath(filePath, request);
+        boolean success = fileService.delete(userId, "/", path);
+        return AjaxResult.whether(success);
+    }
+
+    private String getPath(String basePath, HttpServletRequest request) {
         final String patternPath =
                 request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
         final String bestMatchingPattern =
                 request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-
         String arguments = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, patternPath);
-
         String path;
-
         if (!arguments.isEmpty()) {
-            path = filePath + '/' + arguments;
+            path = basePath + '/' + arguments;
         } else {
-            path = filePath;
+            path = basePath;
         }
-
-        boolean success = fileService.delete(userId, "/", path);
-
-        return AjaxResult.whether(success);
+        return path;
     }
 }
