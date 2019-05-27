@@ -1,4 +1,6 @@
 cake:
+  authorization-token-prefix: 'Bearer '
+  jwt-hs512-secret: 'Mississippi'
   node:
     fileDir: X:\\file
     endpointUrl: http://localhost

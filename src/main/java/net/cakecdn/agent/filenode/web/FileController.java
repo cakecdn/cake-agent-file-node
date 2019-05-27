@@ -5,8 +5,10 @@ import net.cakecdn.agent.filenode.dto.RenameDto;
 import net.cakecdn.agent.filenode.dto.StringBody;
 import net.cakecdn.agent.filenode.dto.info.InfoList;
 import net.cakecdn.agent.filenode.service.FileService;
+import net.cakecdn.agent.filenode.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.NumberUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.HandlerMapping;
@@ -14,15 +16,18 @@ import org.springframework.web.servlet.HandlerMapping;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 public class FileController {
 
     private final FileService fileService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService, JwtTokenUtil jwtTokenUtil) {
         this.fileService = fileService;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @GetMapping("/")
@@ -39,8 +44,14 @@ public class FileController {
     public AjaxResult upload(
             @PathVariable Long userId,
             @RequestParam MultipartFile file,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) throws IOException {
+        Long uid = getAuthUserId(request);
+        if (!uid.equals(userId)) {
+            response.setStatus(403);
+            return null;
+        }
         String fileName = file.getOriginalFilename();
         fileService.upload(userId, "/", fileName, file);
         return AjaxResult.failure("error.");
@@ -52,8 +63,14 @@ public class FileController {
             @PathVariable Long userId,
             @PathVariable String filePath,
             @RequestParam MultipartFile file,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) throws IOException {
+        Long uid = getAuthUserId(request);
+        if (!uid.equals(userId)) {
+            response.setStatus(403);
+            return null;
+        }
         if (file.isEmpty()) {
             return AjaxResult.failure("error: empty body.");
         }
@@ -91,9 +108,18 @@ public class FileController {
     }
 
     @PostMapping("/mkdir/{userId}")
-    public AjaxResult mkdir(@PathVariable Long userId, @RequestBody StringBody dirName) {
+    public AjaxResult mkdir(
+            @PathVariable Long userId,
+            @RequestBody StringBody dirName,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        Long uid = getAuthUserId(request);
+        if (!uid.equals(userId)) {
+            response.setStatus(403);
+            return null;
+        }
         boolean success = fileService.mkdir(userId, "/", dirName.getValue());
-
         return AjaxResult.whether(success);
     }
 
@@ -102,8 +128,14 @@ public class FileController {
             @PathVariable Long userId,
             @PathVariable String filePath,
             @RequestBody StringBody dirName,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
+        Long uid = getAuthUserId(request);
+        if (!uid.equals(userId)) {
+            response.setStatus(403);
+            return null;
+        }
         String path = getPath(filePath, request);
         boolean success = fileService.mkdir(userId, path, dirName.getValue());
         return AjaxResult.whether(success);
@@ -123,8 +155,15 @@ public class FileController {
     @PostMapping("/rename/{userId}")
     public AjaxResult rename(
             @PathVariable Long userId,
-            @RequestBody RenameDto renameDto
+            @RequestBody RenameDto renameDto,
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
+        Long uid = getAuthUserId(request);
+        if (!uid.equals(userId)) {
+            response.setStatus(403);
+            return null;
+        }
         return AjaxResult.whether(fileService.rename(userId, "/", renameDto.getSrc(), renameDto.getDst()));
     }
 
@@ -132,9 +171,15 @@ public class FileController {
     public AjaxResult rename(
             @PathVariable Long userId,
             @PathVariable String filePath,
+            @RequestBody RenameDto renameDto,
             HttpServletRequest request,
-            @RequestBody RenameDto renameDto
+            HttpServletResponse response
     ) {
+        Long uid = getAuthUserId(request);
+        if (!uid.equals(userId)) {
+            response.setStatus(403);
+            return null;
+        }
         String path = getPath(filePath, request);
         return AjaxResult.whether(fileService.rename(userId, path, renameDto.getSrc(), renameDto.getDst()));
     }
@@ -152,5 +197,12 @@ public class FileController {
             path = basePath;
         }
         return path;
+    }
+
+    private Long getAuthUserId(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring("Bearer ".length());
+        Map subjectMap = jwtTokenUtil.getSubFromToken(token);
+        Integer uid = (Integer) subjectMap.get("uid");
+        return uid.longValue();
     }
 }
