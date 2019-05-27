@@ -15,15 +15,19 @@ spring:
         health-check-path: /actuator/health
         health-check-interval: 15s
         instance-id: cake-agent-file-node
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 200MB
 
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: "*"  # 显示端点内所有的状态信息
-#  endpoint:
-#    health:
-#      show-details: ALWAYS # 显示详细的健康状况
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # 显示端点内所有的状态信息
+  endpoint:
+    health:
+      show-details: ALWAYS # 显示详细的健康状况
 
 server:
   port: 7003

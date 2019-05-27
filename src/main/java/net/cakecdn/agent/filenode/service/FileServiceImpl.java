@@ -5,6 +5,7 @@ import net.cakecdn.agent.filenode.dto.FileTypeEnum;
 import net.cakecdn.agent.filenode.dto.info.FileInfo;
 import net.cakecdn.agent.filenode.dto.info.InfoList;
 import net.cakecdn.agent.filenode.dto.info.PathInfo;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -106,6 +107,7 @@ public class FileServiceImpl implements FileService {
                         pathInfo.setParentUrl(pathAppend(baseUrl, userId.toString(), basePath));
                         pathInfo.setParentUrl(parentUrl(pathInfo.getUrl()));
                         pathInfo.setType(FileTypeEnum.DIRECTORY);
+                        pathInfo.setSizeBytes(FileUtils.sizeOfDirectory(f));
                         infoList.getPaths().add(pathInfo);
                     }
                 }
