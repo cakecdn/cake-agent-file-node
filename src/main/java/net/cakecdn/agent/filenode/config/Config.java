@@ -1,6 +1,7 @@
 package net.cakecdn.agent.filenode.config;
 
 import net.cakecdn.agent.filenode.config.bean.AgentConfig;
+import net.cakecdn.agent.filenode.config.bean.Traffic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,4 +22,8 @@ public class Config {
         return agentConfig;
     }
 
+    @Bean
+    Traffic traffic() {
+        return new Traffic();
+    }
 }
