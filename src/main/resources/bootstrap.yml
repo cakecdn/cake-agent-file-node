@@ -16,7 +16,7 @@ spring:
       discovery:
         health-check-path: /actuator/health
         health-check-interval: 15s
-        instance-id: cake-agent-file-node
+        instance-id: node-1
   servlet:
     multipart:
       max-file-size: 100MB

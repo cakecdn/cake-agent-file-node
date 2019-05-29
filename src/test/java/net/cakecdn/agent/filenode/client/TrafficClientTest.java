@@ -23,7 +23,7 @@ public class TrafficClientTest extends CakeAgentFileNodeApplicationTests {
     public void useTraffic() {
         Map<Long, Long> map = new HashMap<>();
         map.put(123456L, 1000L);
-        Map<Long, Long> newMap = trafficClient.useTraffic(map);
+        Map<Long, Long> newMap = trafficClient.useTraffic(map, "unknown-node");
         System.out.println(newMap);
     }
 }

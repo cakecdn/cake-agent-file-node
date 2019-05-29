@@ -14,7 +14,7 @@ public class TrafficHystrix implements TrafficClient {
     }
 
     @Override
-    public Map<Long, Long> useTraffic(Map<Long, Long> using) {
+    public Map<Long, Long> useTraffic(Map<Long, Long> using, String nodeName) {
         return null;
     }
 

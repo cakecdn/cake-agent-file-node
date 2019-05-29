@@ -9,6 +9,7 @@ import net.cakecdn.agent.filenode.exception.TrafficNotFoundException;
 import net.cakecdn.agent.filenode.exception.TrafficRunDryException;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 @Getter
@@ -36,12 +37,17 @@ public class Traffic {
         this.remaining.put(userId, remaining);
     }
 
-    public void setUsed(long userId, long used) {
-        this.used.put(userId, used);
+    public void setRemaining(Map<Long, Long> remaining) {
+        this.remaining = remaining;
+        this.used = new HashMap<>();
+        for (Map.Entry<Long, Long> e : this.remaining.entrySet()) {
+            long key = e.getKey();
+            this.used.put(key, 0L);
+        }
     }
 
-    public void cleanUsedTrafficMap() {
-        this.used = new HashMap<>();
+    public void setUsed(long userId, long used) {
+        this.used.put(userId, used);
     }
 
     public void useTraffic(long userId, long using) throws TrafficRunDryException, TrafficNotFoundException {
@@ -56,5 +62,4 @@ public class Traffic {
         remaining.put(userId, userRemainingTraffic - using); // 剩余流量减少
         used.put(userId, nodeUsedTraffic + using);           // 已用流量增加
     }
-
 }
