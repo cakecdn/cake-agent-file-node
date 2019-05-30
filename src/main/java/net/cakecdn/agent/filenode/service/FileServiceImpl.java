@@ -1,6 +1,7 @@
 package net.cakecdn.agent.filenode.service;
 
-import net.cakecdn.agent.filenode.client.TrafficClient;
+import net.cakecdn.agent.filenode.client.AdminClient;
+import net.cakecdn.agent.filenode.client.UserClient;
 import net.cakecdn.agent.filenode.config.bean.AgentConfig;
 import net.cakecdn.agent.filenode.config.bean.Traffic;
 import net.cakecdn.agent.filenode.dto.FileTypeEnum;
@@ -34,18 +35,20 @@ public class FileServiceImpl implements FileService {
     private String baseFilePath;
     private final AgentConfig agentConfig;
     private final Traffic traffic;
-    private final TrafficClient trafficClient;
+    private final AdminClient adminClient;
+    private final UserClient userClient;
     private static final Logger LOGGER = LoggerFactory.getLogger(FileServiceImpl.class);
 
     @Autowired
     public FileServiceImpl(
             AgentConfig agentConfig,
             Traffic traffic,
-            TrafficClient trafficClient
-    ) {
+            AdminClient adminClient,
+            UserClient userClient) {
         this.agentConfig = agentConfig;
         this.traffic = traffic;
-        this.trafficClient = trafficClient;
+        this.adminClient = adminClient;
+        this.userClient = userClient;
     }
 
     @Override
@@ -147,7 +150,7 @@ public class FileServiceImpl implements FileService {
                         "，当前节点剩余流量为: {" + traffic.getRemaining(userId) +
                         "} ，低于最近一次请求需要的流量为：{" + sizeBytes + "} 。");
                 // 可能已重新充值但未刷新，以报告现用流量的方式重新获取流量信息。
-                UserRemainingTraffic userRemainingTraffic = trafficClient.exchangeTraffic(userId, traffic.getUsed(userId));
+                UserRemainingTraffic userRemainingTraffic = adminClient.exchangeTraffic(userId, traffic.getUsed(userId));
                 traffic.setUsed(userId, 0);
                 traffic.setRemaining(userId, userRemainingTraffic.getRemainingTrafficBytes());
                 LOGGER.info("用户 {" + userId + "} 已将已用流量 {" +
@@ -158,7 +161,7 @@ public class FileServiceImpl implements FileService {
                 return null;
             } catch (TrafficNotFoundException e) {
                 // 没有找到流量信息则重新获取
-                UserRemainingTraffic userRemainingTraffic = trafficClient.getTraffic(userId);
+                UserRemainingTraffic userRemainingTraffic = userClient.getTraffic(userId);
                 traffic.getRemaining().put(userId, userRemainingTraffic.getRemainingTrafficBytes());
                 LOGGER.info("用户 {" + userId + "} 在节点上的流量剩余信息没找到，重新获取到的流量为: {" + userRemainingTraffic.getRemainingTrafficBytes() + "} 。");
             }

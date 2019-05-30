@@ -46,6 +46,10 @@ public class Traffic {
         }
     }
 
+    public void clearRemaining() {
+        this.remaining = new HashMap<>();
+    }
+
     public void setUsed(long userId, long used) {
         this.used.put(userId, used);
     }

@@ -1,17 +1,13 @@
 package net.cakecdn.agent.filenode.client.hystrix;
 
-import net.cakecdn.agent.filenode.client.TrafficClient;
+import net.cakecdn.agent.filenode.client.AdminClient;
 import net.cakecdn.agent.filenode.dto.UserRemainingTraffic;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Component
-public class TrafficHystrix implements TrafficClient {
-    @Override
-    public UserRemainingTraffic getTraffic(Long userId) {
-        return null;
-    }
+public class AdminClientHystrix implements AdminClient {
 
     @Override
     public Map<Long, Long> useTraffic(Map<Long, Long> using, String nodeName) {
