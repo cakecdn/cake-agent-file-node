@@ -2,13 +2,13 @@ package net.cakecdn.agent.filenode.service;
 
 import net.cakecdn.agent.filenode.client.AdminClient;
 import net.cakecdn.agent.filenode.client.UserClient;
-import net.cakecdn.agent.filenode.config.bean.AgentConfig;
-import net.cakecdn.agent.filenode.config.bean.Traffic;
+import net.cakecdn.agent.filenode.config.bean.PulseMeta;
 import net.cakecdn.agent.filenode.dto.FileTypeEnum;
 import net.cakecdn.agent.filenode.dto.UserRemainingTraffic;
 import net.cakecdn.agent.filenode.dto.info.FileInfo;
 import net.cakecdn.agent.filenode.dto.info.InfoList;
 import net.cakecdn.agent.filenode.dto.info.PathInfo;
+import net.cakecdn.agent.filenode.exception.NodeTrafficRunDryException;
 import net.cakecdn.agent.filenode.exception.TrafficNotFoundException;
 import net.cakecdn.agent.filenode.exception.TrafficRunDryException;
 import org.apache.commons.io.FileUtils;
@@ -33,20 +33,17 @@ public class FileServiceImpl implements FileService {
 
     @Value("${cake.node.fileDir:/tmp}")
     private String baseFilePath;
-    private final AgentConfig agentConfig;
-    private final Traffic traffic;
+    private final PulseMeta pulseMeta;
     private final AdminClient adminClient;
     private final UserClient userClient;
     private static final Logger LOGGER = LoggerFactory.getLogger(FileServiceImpl.class);
 
     @Autowired
     public FileServiceImpl(
-            AgentConfig agentConfig,
-            Traffic traffic,
+            PulseMeta pulseMeta,
             AdminClient adminClient,
             UserClient userClient) {
-        this.agentConfig = agentConfig;
-        this.traffic = traffic;
+        this.pulseMeta = pulseMeta;
         this.adminClient = adminClient;
         this.userClient = userClient;
     }
@@ -111,7 +108,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public InfoList traversing(Long userId, String basePath, HttpServletResponse response) throws IOException {
-        String baseUrl = agentConfig.getEndpointUrl();
+        String baseUrl = pulseMeta.getDownloadPath();
 
         File dst = new File(pathAppend(baseFilePath, userId.toString(), basePath));
         InfoList infoList = new InfoList();
@@ -143,27 +140,27 @@ public class FileServiceImpl implements FileService {
             long sizeBytes = dst.length();
             // 流量统计模块
             try {
-                traffic.useTraffic(userId, sizeBytes);
+                pulseMeta.useTraffic(userId, sizeBytes);
             } catch (TrafficRunDryException e) {
-                long used = traffic.getUsed(userId);
-                LOGGER.info("用户 {" + userId + "} 的流量耗尽" +
-                        "，当前节点剩余流量为: {" + traffic.getRemaining(userId) +
-                        "} ，低于最近一次请求需要的流量为：{" + sizeBytes + "} 。");
+                long used = pulseMeta.getUserUsed(userId);
+                LOGGER.info("用户 {" + userId + "} 的流量耗尽" + "，当前节点剩余流量为: {" + pulseMeta.getUserRemaining(userId) + "} ，低于最近一次请求需要的流量为：{" + sizeBytes + "} 。");
                 // 可能已重新充值但未刷新，以报告现用流量的方式重新获取流量信息。
-                UserRemainingTraffic userRemainingTraffic = adminClient.exchangeTraffic(userId, traffic.getUsed(userId));
-                traffic.setUsed(userId, 0);
-                traffic.setRemaining(userId, userRemainingTraffic.getRemainingTrafficBytes());
-                LOGGER.info("用户 {" + userId + "} 已将已用流量 {" +
-                        used + "} 报告给用户端点微服务，重新获取的流量为: {" +
-                        userRemainingTraffic.getRemainingTrafficBytes() + "} ，已用流量已清零。");
+                UserRemainingTraffic userRemainingTraffic = adminClient.exchangeTraffic(userId, pulseMeta.getUserUsed(userId));
+                pulseMeta.setUserUsed(userId, 0);
+                pulseMeta.setUserRemaining(userId, userRemainingTraffic.getRemainingTrafficBytes());
+                LOGGER.info("用户 {" + userId + "} 已将已用流量 {" + used + "} 报告给用户端点微服务，重新获取的流量为: {" + userRemainingTraffic.getRemainingTrafficBytes() + "} ，已用流量已清零。");
                 // 没有流量则禁止访问：需要付款。
                 response.setStatus(402);
                 return null;
             } catch (TrafficNotFoundException e) {
                 // 没有找到流量信息则重新获取
                 UserRemainingTraffic userRemainingTraffic = userClient.getTraffic(userId);
-                traffic.getRemaining().put(userId, userRemainingTraffic.getRemainingTrafficBytes());
+                pulseMeta.getUserRemaining().put(userId, userRemainingTraffic.getRemainingTrafficBytes());
                 LOGGER.info("用户 {" + userId + "} 在节点上的流量剩余信息没找到，重新获取到的流量为: {" + userRemainingTraffic.getRemainingTrafficBytes() + "} 。");
+            } catch (NodeTrafficRunDryException e) {
+                LOGGER.info("节点流量已耗光。当前节点流量为：" + pulseMeta.getNodeRemaining());
+                response.setStatus(403);
+                return null;
             }
             // content-type
             String contentType = Files.probeContentType(Paths.get(dst.toURI()));

@@ -2,9 +2,10 @@ cake:
   authorization-token-prefix: 'Bearer '
   jwt-hs512-secret: 'Mississippi'
   node:
+    tag: node-1
     fileDir: X:\\file
-    endpointUrl: http://localhost
-    healthCheckPath: /health-check
+    uploadUrl: http://localhost
+    downloadUrl: http://localhost
 
 spring:
   application:
@@ -16,7 +17,7 @@ spring:
       discovery:
         health-check-path: /actuator/health
         health-check-interval: 15s
-        instance-id: node-1
+        instance-id: ${cake.node.tag:unkown-node}
   servlet:
     multipart:
       max-file-size: 100MB

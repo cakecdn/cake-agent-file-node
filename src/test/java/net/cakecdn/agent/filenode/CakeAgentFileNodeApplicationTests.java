@@ -10,16 +10,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class CakeAgentFileNodeApplicationTests {
 
-    @Value("${cake.node.fileDir}")
-    private String fileDir;
-
     @Test
     public void contextLoads() {
-    }
-
-    @Test
-    public void fileDir() {
-        System.out.println(fileDir);
     }
 
 }
